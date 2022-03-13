@@ -1053,7 +1053,7 @@ stream {
             proxy_set_header            X-Original-URL          $scheme://$http_host$request_uri;
             proxy_set_header            X-Original-Method       $request_method;
             proxy_set_header            X-Sent-From             "nginx-ingress-controller";
-            proxy_set_header            X-Real-IP               $remote_addr;
+            # proxy_set_header            X-Real-IP               $remote_addr;
             {{ if and $all.Cfg.UseForwardedHeaders $all.Cfg.ComputeFullForwardedFor }}
             proxy_set_header            X-Forwarded-For        $full_x_forwarded_for;
             {{ else }}
@@ -1279,7 +1279,7 @@ stream {
             {{ end }}
 
             {{ $proxySetHeader }} X-Request-ID           $req_id;
-            {{ $proxySetHeader }} X-Real-IP              $remote_addr;
+            # {{ $proxySetHeader }} X-Real-IP              $remote_addr;
             {{ if and $all.Cfg.UseForwardedHeaders $all.Cfg.ComputeFullForwardedFor }}
             {{ $proxySetHeader }} X-Forwarded-For        $full_x_forwarded_for;
             {{ else }}
