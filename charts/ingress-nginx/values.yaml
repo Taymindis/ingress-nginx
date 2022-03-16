@@ -38,9 +38,14 @@ controller:
   containerPort:
     http: 80
     https: 443
+    sftp: 3022
 
   # -- Will add custom configuration options to Nginx https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/
   config: {}
+    # main-snippet: |
+    #   load_module /modules_mount/etc/nginx/modules/ngx_http_naxsi_module.so;
+    # MaxWorkerConnections: 8192
+
 
   # -- Annotations to be added to the controller config configuration configmap.
   configAnnotations: {}
@@ -434,8 +439,8 @@ controller:
 
   ## Override NGINX template
   customTemplate:
-    configMapName: ""
-    configMapKey: ""
+    configMapName: "nginxtemplate"
+    configMapKey: "custom_nginx.tmpl"
 
   service:
     enabled: true
@@ -507,7 +512,8 @@ controller:
     nodePorts:
       http: ""
       https: ""
-      tcp: {}
+      tcp:
+        3022: 32122
       udp: {}
 
     external:
@@ -554,14 +560,15 @@ controller:
   #      mountPath: /srv/var/lib/lemonldap-ng/portal/skins
 
   # -- Additional volumeMounts to the controller main container.
-  extraVolumeMounts: []
-  #  - name: copy-portal-skins
-  #   mountPath: /var/lib/lemonldap-ng/portal/skins
+  extraVolumeMounts: 
+  - name: www-resources
+    mountPath: /www
 
   # -- Additional volumes to the controller pod.
-  extraVolumes: []
-  #  - name: copy-portal-skins
-  #    emptyDir: {}
+  extraVolumes: 
+  - name: www-resources
+    persistentVolumeClaim:
+      claimName: ssd-nfs-ext-pvc
 
   # -- Containers, which are run before the app containers are started.
   extraInitContainers: []
@@ -569,10 +576,10 @@ controller:
   #   image: busybox
   #   command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
 
-  extraModules:
+  extraModules: []
   ## Modules, which are mounted into the core nginx image
-  - name: ingnaxsimod
-    image: minikawoon/ing-naxsi-mod:latest
+  # - name: ingnaxsimod
+  #   image: minikawoon/ing-naxsi-mod
   #
   # The image must contain a `/usr/local/bin/init_module.sh` executable, which
   # will be executed as initContainers, to move its config files within the
@@ -646,12 +653,12 @@ controller:
   metrics:
     port: 10254
     # if this port is changed, change healthz-port: in extraArgs: accordingly
-    enabled: false
+    enabled: true
 
     service:
-      annotations: {}
-      # prometheus.io/scrape: "true"
-      # prometheus.io/port: "10254"
+      annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "10254"
 
       # clusterIP: ""
 
